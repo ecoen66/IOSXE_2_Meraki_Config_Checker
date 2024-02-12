@@ -100,7 +100,7 @@ class read:
         Features_configured = []
 
         # Here we will go through parsing/reading Cisco Catalyst configuration file and capture specific configuration
-        parse =  CiscoConfParse(sw_file, syntax='iosxe')
+        parse =  CiscoConfParse(sw_file, syntax='ios')
 
         #FUTURE ENHANCMENT - Add catalyst command then add it to a in dic()
         hostname = parse.find_objects('^hostname')
