@@ -27,6 +27,13 @@ Below is the list of configuration the tool can read at this stage
 - IP SLA
 - Multicast modes
 - Static Routing
+- RIP Routing
+- EIGRP Routing
+- OSPFv2 Routing
+- OSPFv3 Routing
+- BGP Routing
+- IS-IS Routing
+- VRF
 - IPv6
 - Interface Configuration
 	- Private VLAN
@@ -81,4 +88,4 @@ From any browser enter http://ip_address:5000 or http://localhost:5000
 
 You can check the app here -> https://check.netdecorators.com/read
 
-[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/fadysharobeem/Catalyst_2_Meraki_Config_Checker)
+< [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/fadysharobeem/Catalyst_2_Meraki_Config_Checker) >

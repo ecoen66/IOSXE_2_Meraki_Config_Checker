@@ -1,4 +1,4 @@
-from ciscoconfparse import CiscoConfParse
+from ciscoconfparse2 import CiscoConfParse
 from flask import Flask,render_template,request,redirect,url_for
 import os,requests,json,pprint,re
 
@@ -63,20 +63,44 @@ class read:
                 if Etherchannel_Type in LACP:
                     feature_list_on_interface.append("EtherChannel LACP")
 
-        #combine all the features on the inetface together in a list and send it back
+        #combine all the features on the interface together in a list and send it back
         return(feature_list_on_interface)
 
-    def Checking_featuers(sw_file):
+    def Checking_features(sw_file):
+        # ecoen66 added some additional unsupported features
+        additional_unsupported = {'RIP':'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing',\
+        'EIGRP':'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing',\
+        'OSPFv2':'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing',\
+        'OSPFv3':'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing',\
+        'BGP':'https://documentation.meraki.com/MX/Networks_and_Routing/Border_Gateway_Protocol_(BGP)',\
+        'IS-IS':'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing',\
+        'VRF': 'https://documentation.meraki.com/MS/Layer_3_Switching/MS_Layer_3_Switching_and_Routing'\
+        }
+        
+        additional_More_info = {'RIP':'Not Supported',\
+        'EIGRP':'Not Supported',\
+        'OSPFv2':'Supported on MS250 and above',\
+        'OSPFv3':'Not Supported',\
+        'BGP':'Currently supported on MX only',\
+        'IS-IS':'Not Supported',\
+        'VRF': 'Not Supported'\
+        }
+
         # Connect to the server where we have the list of unsupported features on Meraki MS and the links associated to those features
         unsupported_features_raw = requests.get('http://msfeatures.netdecorators.com:7900/return_list_unsupported')
         More_info_raw = requests.get('http://msfeatures.netdecorators.com:7900/return_more_info')
         unsupported_features = json.loads(unsupported_features_raw.text)
         More_info = json.loads(More_info_raw.text)
+        unsupported_features.update(additional_unsupported)
+        More_info.update(additional_More_info)
+        
+        
+        print(f"Unsupported features: {unsupported_features}")
 
         Features_configured = []
 
         # Here we will go through parsing/reading Cisco Catalyst configuration file and capture specific configuration
-        parse =  CiscoConfParse(sw_file, syntax='ios')
+        parse =  CiscoConfParse(sw_file, syntax='iosxe')
 
         #FUTURE ENHANCMENT - Add catalyst command then add it to a in dic()
         hostname = parse.find_objects('^hostname')
@@ -116,6 +140,14 @@ class read:
         Multicast_pim = parse.find_objects('^ip\spim')
         static_routing = parse.find_objects('^ip\sroute')
         ipv6 = parse.find_objects('^ipv6')
+        rip = parse.find_objects('^router rip')
+        eigrp = parse.find_objects('^router eigrp')
+        ospfv3 = parse.find_objects('^router ospfv3')
+        ospf = parse.find_objects('^router ospf')
+        bgp = parse.find_objects('^router bgp')
+        isis = parse.find_objects('^router isis')
+        vrf = parse.find_objects('^vrf')
+
 
         # Build main dictionary of all the features the script can read
         a = {
@@ -155,7 +187,14 @@ class read:
         "Multicast IGMP": Multicast_igmp,
         "Multicast PIM": Multicast_pim,
         "Static routing": static_routing,
-        "IPv6": ipv6
+        "IPv6": ipv6,
+        "RIP": rip,
+        "EIGRP": eigrp,
+        "OSPFv2": ospf,
+        "OSPFv3": ospfv3,
+        "BGP": bgp,
+        "IS-IS": isis,
+        "VRF": vrf
         }
 
         # Running a loop to take out the unconfigured features and only focus on what is configured
