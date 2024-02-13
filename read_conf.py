@@ -30,6 +30,7 @@ class read:
             mode_access = config_det.re_match_typed(regex=r'\sswitchport\smode\saccess?(\S.*)')
             mode_trunk = config_det.re_match_typed(regex=r'\sswitchport\smode\strunk?(\S.*)')
             directed_broadcast = config_det.re_match_typed(regex=r'\sip\sdirected-broadcast?(\S.*)')
+            description = config_det.re_match_typed(regex=r'\sdescription?(\S.*)')
 
             if not private_vlan == "":
                 feature_list_on_interface.append(["Private_Vlan",""])
@@ -66,11 +67,13 @@ class read:
                 if Etherchannel_Type in LACP:
                     feature_list_on_interface.append(["EtherChannel LACP",""])
             if not mode_access == "":
-                feature_list_on_interface.append(["access mode","Y"])
+                feature_list_on_interface.append(["Access mode","Y"])
             if not mode_trunk == "":
-                feature_list_on_interface.append(["trunk mode","Y"])
+                feature_list_on_interface.append(["Trunk mode","Y"])
             if not directed_broadcast == "":
                 feature_list_on_interface.append(["Directed Broadcast",""])
+            if not description == "":
+                feature_list_on_interface.append(["Description","Y"])
 
         #combine all the features on the interface together in a list and send it back
         return(feature_list_on_interface)
@@ -158,8 +161,8 @@ class read:
 
         # Build main dictionary of all the features the script can read
         a = {
-        "hostname": [hostname,""],
-        "interface": [interface,"Y"],
+        "Hostname": [hostname,""],
+        "Interface": [interface,"Y"],
         "VTP": [vtp,""],
         "QoS": [mls,""],
         "Spanning Tree": [spanning,""], #check the type of STP
@@ -175,7 +178,7 @@ class read:
         "banner": [banner,""],
         "radius": [radius,""],
         "radius": [radius2,""],
-        "http server": [http_server,""],
+        "HTTP server": [http_server,""],
         "Stack": [stack,""],
         "MAB VLAN MAC Auth": [mab_VLAN_mac,""],     #can't be configured
         "Layer 2 VLAN": [VLAN,""],
@@ -219,7 +222,7 @@ class read:
                         Features_configured.append([STP_Type,translatable])
 
                     # As some of the configuration will be nested under the interface config, hence we have this if statement and send the interface name to Interface_detail function to get the subconfig of the interface
-                    if key == "interface":
+                    if key == "Interface":
                         check_features = read.Interface_detail(detail)
                         print(f"======{check_features}")
                         #Go through a loop to read the return of the config under the interface and then add them to the main list (Features_configured)
