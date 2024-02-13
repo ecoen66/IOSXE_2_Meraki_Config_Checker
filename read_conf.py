@@ -27,41 +27,50 @@ class read:
             lldp = config_det.re_match_typed(regex=r'\slldp?(\S.*)')
             IPv6 = config_det.re_match_typed(regex=r'\sipv6?(\S.*)')
             Etherchannel_Type = config_det.re_match_typed('^\schannel-group\s\d\smode\s+(\S.+)')
+            mode_access = config_det.re_match_typed(regex=r'\sswitchport\smode\saccess?(\S.*)')
+            mode_trunk = config_det.re_match_typed(regex=r'\sswitchport\smode\strunk?(\S.*)')
+            directed_broadcast = config_det.re_match_typed(regex=r'\sip\sdirected-broadcast?(\S.*)')
 
             if not private_vlan == "":
-                feature_list_on_interface.append("Private_Vlan")
-            if not pruning =="":
-                feature_list_on_interface.append("Pruning")
-            if not voice_vlan=="":
-                feature_list_on_interface.append("Voice VLAN")
-            if not data_vlan=="":
-                feature_list_on_interface.append("Data VLAN")
-            if not stp_port=="":
-                feature_list_on_interface.append("STP port cost")
-            if not portfast=="":
-                feature_list_on_interface.append("Portfast")
-            if not root_guard=="":
-                feature_list_on_interface.append("RootGuard")
-            if not Flex_links =="":
-                feature_list_on_interface.append("Flex Links")
-            if not storm_control=="":
-                feature_list_on_interface.append("Storm Control")
-            if not protected =="":
-                feature_list_on_interface.append("Protected port")
-            if not port_security =="":
-                feature_list_on_interface.append("Port Security")
-            if not port_udld =="":
-                feature_list_on_interface.append("UDLD")
-            if not lldp =="":
-                feature_list_on_interface.append("LLDP")
-            if not IPv6 =="":
-                feature_list_on_interface.append("IPv6")
+                feature_list_on_interface.append(["Private_Vlan",""])
+            if not pruning == "":
+                feature_list_on_interface.append(["Pruning",""])
+            if not voice_vlan== "":
+                feature_list_on_interface.append(["Voice VLAN","Y"])
+            if not data_vlan== "":
+                feature_list_on_interface.append(["Data VLAN","Y"])
+            if not stp_port== "":
+                feature_list_on_interface.append(["STP port cost",""])
+            if not portfast== "":
+                feature_list_on_interface.append(["Portfast",""])
+            if not root_guard== "":
+                feature_list_on_interface.append(["RootGuard",""])
+            if not Flex_links == "":
+                feature_list_on_interface.append(["Flex Links",""])
+            if not storm_control== "":
+                feature_list_on_interface.append(["Storm Control",""])
+            if not protected == "":
+                feature_list_on_interface.append(["Protected port",""])
+            if not port_security == "":
+                feature_list_on_interface.append(["Port Security",""])
+            if not port_udld == "":
+                feature_list_on_interface.append(["UDLD",""])
+            if not lldp == "":
+                feature_list_on_interface.append(["LLDP",""])
+            if not IPv6 == "":
+                feature_list_on_interface.append(["IPv6",""])
             # Figuring out the type of Etherchannel mode on the interface
-            if not Etherchannel_Type=="":
+            if not Etherchannel_Type== "":
                 if Etherchannel_Type in PAgP:
-                    feature_list_on_interface.append("EtherChannel PAgP")
+                    feature_list_on_interface.append(["EtherChannel PAgP",""])
                 if Etherchannel_Type in LACP:
-                    feature_list_on_interface.append("EtherChannel LACP")
+                    feature_list_on_interface.append(["EtherChannel LACP",""])
+            if not mode_access == "":
+                feature_list_on_interface.append(["access mode","Y"])
+            if not mode_trunk == "":
+                feature_list_on_interface.append(["trunk mode","Y"])
+            if not directed_broadcast == "":
+                feature_list_on_interface.append(["Directed Broadcast",""])
 
         #combine all the features on the interface together in a list and send it back
         return(feature_list_on_interface)
@@ -88,19 +97,17 @@ class read:
 
         # Connect to the server where we have the list of unsupported features on Meraki MS and the links associated to those features
         unsupported_features_raw = requests.get('http://msfeatures.netdecorators.com:7900/return_list_unsupported')
-        More_info_raw = requests.get('http://msfeatures.netdecorators.com:7900/return_more_info')
         unsupported_features = json.loads(unsupported_features_raw.text)
-        More_info = json.loads(More_info_raw.text)
         unsupported_features.update(additional_unsupported)
+        More_info_raw = requests.get('http://msfeatures.netdecorators.com:7900/return_more_info')
+        More_info = json.loads(More_info_raw.text)
         More_info.update(additional_More_info)
         
         
-        print(f"Unsupported features: {unsupported_features}")
-
         Features_configured = []
 
         # Here we will go through parsing/reading Cisco Catalyst configuration file and capture specific configuration
-        parse =  CiscoConfParse(sw_file, syntax='ios')
+        parse =  CiscoConfParse(sw_file, syntax='ios', factory=True)
 
         #FUTURE ENHANCMENT - Add catalyst command then add it to a in dic()
         hostname = parse.find_objects('^hostname')
@@ -124,7 +131,7 @@ class read:
         stack = parse.find_objects('^switch')
         mab_VLAN_mac = parse.find_objects('^mab\srequest\sformat')
         VLAN = parse.find_objects('^vlan')
-        VMPS = parse.find_objects('^vpms')
+        VPMS = parse.find_objects('^vpms')
         uplinkfast = parse.find_objects('^spanning-tree\suplinkfast')
         backbonefast = parse.find_objects('^spanning-tree\sbackbonefast')
         Loopguard = parse.find_objects('spanning-tree\sloopguard')
@@ -151,62 +158,65 @@ class read:
 
         # Build main dictionary of all the features the script can read
         a = {
-        "hostname":hostname,
-        "interface":interface,
-        "VTP":vtp,
-        "QoS":mls,
-        "Spanning Tree":spanning, #check the type of STP
-        "SNMP":snmp,
-        "Syslog":logging_host,
-        "NTP":ntp, #can't be configured
-        "Access-list":access_list,
-        "Port mirroring":port_mirror,
-        "AAA":aaa,
-        "Extended access-list":extended_access_list,
-        "NetFlow":netflow,     #can't be cofigured
-        "DHCP":dhcp,
-        "banner":banner,
-        "radius":radius,
-        "radius":radius2,
-        "http server":http_server,
-        "Stack":stack,
-        "MAB VLAN MAC Auth": mab_VLAN_mac,     #can't be cofigured
-        "Layer 2 VLAN": VLAN,
-        "VPMS": VMPS,     #can't be cofigured
-        "STP Uplinkfast": uplinkfast, #can't be configured
-        "STP Backbonefast": backbonefast, #can't be configured
-        "STP LoopGuard": Loopguard,
-        "DHCP Snooping": DHCP_Snooping,
-        "IP Source Binding": IP_Source_Guard,
-        "ARP Inspection": ARP_Inspection,
-        "ARP Access-list": ARP_ACL,
-        "Protocol Storm Protection": psp,
-        "UDLD": UDLD,
-        "Logging": logging,
-        "IP SLA": ip_sla,
-        "Multicast IGMP": Multicast_igmp,
-        "Multicast PIM": Multicast_pim,
-        "Static routing": static_routing,
-        "IPv6": ipv6,
-        "RIP": rip,     #can't be cofigured
-        "EIGRP": eigrp,     #can't be cofigured
-        "OSPFv2": ospf,
-        "OSPFv3": ospfv3,     #can't be cofigured
-        "BGP": bgp,     #can't be cofigured
-        "IS-IS": isis,     #can't be cofigured
-        "VRF": vrf
+        "hostname": [hostname,""],
+        "interface": [interface,"Y"],
+        "VTP": [vtp,""],
+        "QoS": [mls,""],
+        "Spanning Tree": [spanning,""], #check the type of STP
+        "SNMP": [snmp,""],
+        "Syslog": [logging_host,""],
+        "NTP": [ntp,""], #can't be configured
+        "Access-list": [access_list,""],
+        "Port mirroring": [port_mirror,""],
+        "AAA": [aaa,""],
+        "Extended access-list": [extended_access_list,""],
+        "NetFlow": [netflow,""],     #can't be configured
+        "DHCP server": [dhcp,""],
+        "banner": [banner,""],
+        "radius": [radius,""],
+        "radius": [radius2,""],
+        "http server": [http_server,""],
+        "Stack": [stack,""],
+        "MAB VLAN MAC Auth": [mab_VLAN_mac,""],     #can't be configured
+        "Layer 2 VLAN": [VLAN,""],
+        "VPMS": [VPMS,""],     #can't be configured
+        "STP Uplinkfast": [uplinkfast,""], #can't be configured
+        "STP Backbonefast": [backbonefast,""], #can't be configured
+        "STP LoopGuard": [Loopguard,""],
+        "DHCP Snooping": [DHCP_Snooping,""],
+        "IP Source Binding": [IP_Source_Guard,""],
+        "ARP Inspection": [ARP_Inspection,""],
+        "ARP Access-list": [ARP_ACL,""],
+        "Protocol Storm Protection": [psp,""],
+        "UDLD": [UDLD,""],
+        "Logging": [logging,""],
+        "IP SLA": [ip_sla,""],
+        "Multicast IGMP": [Multicast_igmp,""],
+        "Multicast PIM": [Multicast_pim,""],
+        "Static routing": [static_routing,""],
+        "IPv6": [ipv6,""],
+        "RIP": [rip,""],     #can't be configured
+        "EIGRP": [eigrp,""],     #can't be configured
+        "OSPFv2": [ospf,""],
+        "OSPFv3": [ospfv3,""],     #can't be configured
+        "BGP": [bgp,""],     #can't be configured
+        "IS-IS": [isis,""],     #can't be configured
+        "VRF": [vrf,""]
         }
 
         # Running a loop to take out the unconfigured features and only focus on what is configured
         for key, value in a.items():
-            if not value:
+            if not value[0]:
                 print(f'---------------{key} is not configured')
             else:
-                for detail in value:
+                for detail in value[0]:
                     #Lookup the type of STP
                     STP_Type = detail.re_match_typed('^spanning-tree\smode\s+(\S.+)')
-                    if not STP_Type=="":
-                        Features_configured.append(STP_Type)
+                    translatable = ""
+                    if not STP_Type== "":
+                        if STP_Type=="rapid-pvst":
+                            translatable = "Y"
+                        Features_configured.append([STP_Type,translatable])
 
                     # As some of the configuration will be nested under the interface config, hence we have this if statement and send the interface name to Interface_detail function to get the subconfig of the interface
                     if key == "interface":
@@ -220,11 +230,11 @@ class read:
 
                     detail = detail.text
                     print(f"{key} and value is {detail}")
-                    Features_configured.append(key)
+                    Features_configured.append([key,value[1]])
         #Only capture unique values in a new list
         aux_features_config = []
-        for word in Features_configured:
-            if word not in aux_features_config:
-                aux_features_config.append(word)
+        for entry in Features_configured:
+            if entry not in aux_features_config:
+                aux_features_config.append(entry)
 
         return aux_features_config, unsupported_features,More_info

@@ -29,12 +29,12 @@ def result():
     # Go through the outcome from the read_conf functions and split the supported and unsupported features as well as the supported links
     x = 0
     while x < (len(the_list)-1):
-        if the_list[x] not in unsupported_features.keys():
+        if the_list[x][0] not in unsupported_features.keys():
             can_list.append(the_list[x])
             x +=1
-        if the_list[x] in unsupported_features.keys():
-            not_list[the_list[x]] = unsupported_features[the_list[x]]
-            more[the_list[x]] = More_info[the_list[x]]
+        if the_list[x][0] in unsupported_features.keys():
+            not_list[the_list[x][0]] = unsupported_features[the_list[x][0]]
+            more[the_list[x][0]] = More_info[the_list[x][0]]
             x +=1
     # Returning to the user check_comp html page with the variables of the features supported and not as well as the URLs attached to each unsupported feature
     return render_template("check_comp.html", can_list =can_list, not_list=not_list, more=more)
