@@ -49,6 +49,7 @@ Below is the list of configuration the tool can read at this stage
 	- UDLD
 	- LLDP
 	- EtherChannel modes
+	- Directed Broadcast
 
 # Solution Components
 

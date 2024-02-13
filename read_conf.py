@@ -161,7 +161,7 @@ class read:
 
         # Build main dictionary of all the features the script can read
         a = {
-        "Hostname": [hostname,""],
+        "Hostname": [hostname,"Y"],
         "Interface": [interface,"Y"],
         "VTP": [vtp,""],
         "QoS": [mls,""],
