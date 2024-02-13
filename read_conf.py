@@ -188,12 +188,12 @@ class read:
         "Multicast PIM": Multicast_pim,
         "Static routing": static_routing,
         "IPv6": ipv6,
-        "RIP": rip,
-        "EIGRP": eigrp,
+        "RIP": rip,     #can't be cofigured
+        "EIGRP": eigrp,     #can't be cofigured
         "OSPFv2": ospf,
-        "OSPFv3": ospfv3,
-        "BGP": bgp,
-        "IS-IS": isis,
+        "OSPFv3": ospfv3,     #can't be cofigured
+        "BGP": bgp,     #can't be cofigured
+        "IS-IS": isis,     #can't be cofigured
         "VRF": vrf
         }
 
